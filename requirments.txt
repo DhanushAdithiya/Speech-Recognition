@@ -3,3 +3,4 @@ numpy
 librosa
 features
 hmmlearn
+PyAudio
