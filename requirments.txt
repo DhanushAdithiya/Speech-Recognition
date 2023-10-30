@@ -4,3 +4,5 @@ librosa
 features
 hmmlearn
 PyAudio
+discord.py
+python-dotenv

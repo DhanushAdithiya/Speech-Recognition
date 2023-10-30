@@ -3,3 +3,5 @@
 /model
 /model.bak
 /Training2
+.env
+/__pycache__
