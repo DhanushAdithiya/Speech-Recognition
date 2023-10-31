@@ -34,42 +34,34 @@ intents.message_content = True
 
 client = discord.Client(intents = intents)
 
-@client.event
-async def on_ready():
-    while True:
-        pred = predict("../test/knock.mp3", hmm_models)
-        await client.get_channel(1099337838237061185).send("You have a " + pred )
-        await asyncio.sleep(3600)
+# @client.event  
+# async def on_ready():
+#     while True:
+#         pred = predict("../test/knock.mp3", hmm_models)
+#         await client.get_channel(1099337838237061185).send("You have a " + pred )
+#         await asyncio.sleep(3600)
 
 
-client.run(token)
+# client.run(token)
 
 
 
+# Options
+# 1 - Record every 2 seconds and analyze that - DRAWBACK - WILL LEAD TO MORE OVERHEAD + POSSIBLE DATA LOSS + SLOW
+# 2 - Stream the audio continously and have the model monitor it continiously - IDK HOW?
 
-# CHUNK = 1024
-# FORMAT = pyaudio.paInt16
-# CHANNELS = 1 if sys.platform == "darwin" else 2
-# RATE = 44100
-# RECORD_SECONDS = 3
-
-
-# with wave.open("output.mp3", "wb") as wf:
-#     p = pyaudio.PyAudio()
-#     wf.setnchannels(CHANNELS)
-#     wf.setsampwidth(p.get_sample_size(FORMAT))
-#     wf.setframerate(RATE)
-
-
-#     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True)
-
-#     print("RECORDING")
-#     for _ in range(0, RATE // CHUNK * RECORD_SECONDS):
-#         wf.writeframes(stream.read(CHUNK))
-#     print("DONE")
-
-
-#     stream.close()
-#     p.terminate()
+# class Application():
+#     def __init__(self) -> None:
+#         self.p = pyaudio.PyAudio()
+#         self.stream = self.p.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True)
     
+#     async def on_ready(self):
+#         self.task = asyncio.create_task(self.listen())
+
+#     async def listen(self):
+#         while True:
+#             data = self.stream.read(1024)
+            
+#             if predict()
+
 
