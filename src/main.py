@@ -24,6 +24,7 @@ else:
         model = pickle.load(open(f"../model/{file}", "rb"))
         hmm_models.append((model, filename))
 
+
 load_dotenv()
 token = os.getenv("TOKEN")
 user_id = os.getenv("USER_ID")
@@ -34,15 +35,23 @@ intents.message_content = True
 
 client = discord.Client(intents = intents)
 
-# @client.event  
-# async def on_ready():
-#     while True:
-#         pred = predict("../test/knock.mp3", hmm_models)
-#         await client.get_channel(1099337838237061185).send("You have a " + pred )
-#         await asyncio.sleep(3600)
+
+@client.event  
+async def on_ready():
+    while True:
+        prediction = predict("../test/db.mp3", hmm_models)
+        print(prediction)
+        match prediction:
+            case "Doorbell":
+                await client.get_channel(1099337838237061185).send("You have a visitor")
+            case "Cooker":
+                await client.get_channel(1099337838237061185).send("The cooker has blown a whistle")
+            case _: 
+                pass
+        await asyncio.sleep(10)
 
 
-# client.run(token)
+client.run(token)
 
 
 

@@ -2,7 +2,7 @@ from hmmlearn import hmm
 import numpy as np
 
 class HiddenMarkovModelTrainer(object):
-    def __init__(self, model_name="Gaussian", n_components=6, cov_type="full", n_iter=10000):
+    def __init__(self, model_name="Gaussian", n_components=3, cov_type="diag", n_iter=10000):
         self.model_name = model_name
         self.n_components = n_components
         self.cov_type = cov_type
