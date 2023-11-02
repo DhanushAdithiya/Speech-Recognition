@@ -3,7 +3,7 @@ import numpy as np
 
 
 def predict(test_audio, hmm_models):
-    x, sr = librosa.load(test_audio, duration = 2.0)
+    x, sr = librosa.load(test_audio, duration = 1.0)
     input_mfcc = librosa.feature.mfcc(y=x, sr=sr)
     input_mfcc = input_mfcc[:,:30]
 

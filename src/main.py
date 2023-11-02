@@ -21,13 +21,16 @@ from monitor_audio import monitor_audio
 
 def main():
     hmm_models = []
-    def watch(path_to_watch):
+    def watch(path_to_watch, event):
         print("Starting to watch")
-        if not os.listdir(path_to_watch):
-            time.sleep(1)
-        for filename in os.listdir(path_to_watch):
-            print("PRED:", predict(f"{path_to_watch}/{filename}", hmm_models))
-            os.remove(f"{path_to_watch}/{filename}")
+        while True:
+            if not os.listdir(path_to_watch):
+                time.sleep(1)
+            for filename in os.listdir(path_to_watch):
+                print("PRED:", predict(f"{path_to_watch}/{filename}", hmm_models))
+                os.remove(f"{path_to_watch}/{filename}")
+            if event.is_set():
+                break
 
     
     if not os.listdir("../model"):
@@ -38,10 +41,10 @@ def main():
             model = pickle.load(open(f"../model/{file}", "rb"))
             hmm_models.append((model, filename))
 
-
-    event = threading.Event()
-    t1 = threading.Thread(target=watch, args=("../temp_audios",))
-    t2 = threading.Thread(target=monitor_audio, args=(event,))
+    event1 = threading.Event()
+    event2 = threading.Event()
+    t1 = threading.Thread(target=watch, args=("../temp_audios",event1,))
+    t2 = threading.Thread(target=monitor_audio, args=(event2,))
 
     t2.daemon = True
     t1.daemon = True
@@ -54,8 +57,9 @@ def main():
             time.sleep(.1)
     except KeyboardInterrupt:
         print("Attempting to close threads")
+        event1.set()
+        event2.set()
         t1.join()
-        event.set()
         t2.join()
         print("Closed Threads Sucessfully")
 
