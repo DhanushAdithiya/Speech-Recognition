@@ -18,82 +18,56 @@ from generateModel import generate_model
 from prediction import predict
 from monitor_audio import monitor_audio
 
+# Load environment variables from a .env file
+load_dotenv()
 
-def main():
-    hmm_models = []
-    def watch(path_to_watch, event):
-        print("Starting to watch")
-        while True:
-            if not os.listdir(path_to_watch):
-                time.sleep(1)
-            for filename in os.listdir(path_to_watch):
-                print("PRED:", predict(f"{path_to_watch}/{filename}", hmm_models))
-                os.remove(f"{path_to_watch}/{filename}")
-            if event.is_set():
-                break
+# Your Discord bot token
+TOKEN = os.getenv('TOKEN')
 
-    
-    if not os.listdir("../model"):
+# Discord client
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+
+hmm_models = []
+
+
+if not os.listdir("../model"):
         hmm_models = generate_model("../Training2")
-    else:
-        for file in os.listdir("../model"):
-            filename = file[:-4]
-            model = pickle.load(open(f"../model/{file}", "rb"))
-            hmm_models.append((model, filename))
+else:
+    for file in os.listdir("../model"):
+        filename = file[:-4]
+        model = pickle.load(open(f"../model/{file}", "rb"))
+        hmm_models.append((model, filename))
 
+
+def watch(path_to_watch, event, text_channel):
+    print("Starting to watch")
+    while True:
+        if not os.listdir(path_to_watch):
+            time.sleep(1)
+        for filename in os.listdir(path_to_watch):
+            prediction = predict(f"{path_to_watch}/{filename}", hmm_models)
+            os.remove(f"{path_to_watch}/{filename}")
+            # Send the prediction as a message to the specified text channel
+            asyncio.run_coroutine_threadsafe(text_channel.send(f"Prediction: {prediction}"), client.loop)
+        if event.is_set():
+            break
+
+@client.event
+async def on_ready():
+    print(f'We have logged in as {client.user}')
+    # Find the text channel where you want to send predictions
+    text_channel = client.get_channel(int(os.getenv('CHANNEL_ID')))
     event1 = threading.Event()
     event2 = threading.Event()
-    t1 = threading.Thread(target=watch, args=("../temp_audios",event1,))
-    t2 = threading.Thread(target=monitor_audio, args=(event2,))
-
-    t2.daemon = True
+    t1 = threading.Thread(target=watch, args=("../temp_audios", event1, text_channel,))
+    t2 = threading.Thread(target=monitor_audio, args=(event2,) )
     t1.daemon = True
-
+    t2.daemon = True
     t1.start()
     t2.start()
 
-    try:
-        while 1: 
-            time.sleep(.1)
-    except KeyboardInterrupt:
-        print("Attempting to close threads")
-        event1.set()
-        event2.set()
-        t1.join()
-        t2.join()
-        print("Closed Threads Sucessfully")
-
-if __name__ == "__main__":
-    main()
-
-
-# load_dotenv()
-# token = os.getenv("TOKEN")
-# user_id = os.getenv("USER_ID")
-
-
-# intents = discord.Intents.default()
-# intents.message_content = True
-
-# client = discord.Client(intents = intents)
-
-
-# @client.event  
-# async def on_ready():
-#     while True:
-#         prediction = predict("../test/db.mp3", hmm_models)
-#         print(prediction)
-#         match prediction:
-#             case "Doorbell":
-#                 await client.get_channel(1099337838237061185).send("You have a visitor")
-#             case "Cooker":
-#                 await client.get_channel(1099337838237061185).send("The cooker has blown a whistle")
-#             case _: 
-#                 pass
-#         await asyncio.sleep(10)
-
-
-# client.run(token)
-
-
-
+# Start the Discord bot
+client.run(TOKEN)
